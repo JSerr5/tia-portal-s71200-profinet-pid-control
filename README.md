@@ -295,6 +295,24 @@ LaboratorioPID/
 
 ---
 
+## 8. Implementaciones Futuras y Mejoras de Ingeniería
+
+Con el propósito de escalar esta arquitectura hacia un estándar industrial robusto y ampliar las capacidades de diagnóstico y supervisión del lazo cerrado, se plantean las siguientes líneas de evolución técnica:
+
+1. **Visualización de Curvas de Tendencia (*Trend View*) y Estandarización de Formatos en HMI**:
+   - Aprovechar el área libre de la pantalla widescreen de `12"` de la **SIMATIC HMI TP1200 Comfort** en las vistas de operación ([`HMI-Auto.jpeg`](./images/HMI-Auto.jpeg) y [`HMI-Manual.jpeg`](./images/HMI-Manual.jpeg)) para incorporar una gráfica de tendencias en tiempo real (*Trend View*) con las señales **`Setpoint`**, **`PresionBar`** y **`Apertura de la válvula (%)`**, permitiendo evaluar visualmente el sobreimpulso (*overshoot*), el tiempo de establecimiento y el error en estado estacionario ante cambios de referencia o perturbaciones neumáticas.
+   - Estandarizar la precisión decimal de todos los campos E/S mostrados entre modos (por ejemplo, `2` o `3` cifras decimales consistentes para presión y `1` o `2` decimales para el porcentaje de apertura).
+
+2. **Lazo de Realimentación de Posición Física del Actuador (`U5` → `%IW66`)**:
+   - Aprovechar la segunda entrada analógica integrada disponible en la CPU 1214C de `PLC-Serrato` (**`%IW66`**) para adquirir la señal de realimentación de posición real **`U5` (`2 ... 10 V DC`)** entregada por el borne **`5` (`OG`)** del actuador **BELIMO NFX24-MFT-X1**.
+   - Escalar `%IW66` mediante el rango `5530 ... 27648` para contrastar en tiempo real el porcentaje de apertura comandado (`"DBPresion".AperturaBelimo`) frente a la posición mecánica efectiva del eje, habilitando la detección temprana de atascos de válvula, desgaste del mecanismo o fallas en la alimentación de `24 V AC/DC`.
+
+3. **Diagnóstico de Red y *Watchdog* (*Heartbeat*) en Comunicación PROFINET S7 (`PUT` / `GET`)**:
+   - Implementar la supervisión activa de los parámetros de diagnóstico **`ERROR`** y **`STATUS`** en las instancias **`PUT_DB [DB4]`** y **`GET_DB [DB5]`** dentro de `Comunicacion [FC1]`, acompañada de un bit de pulso de vida (*heartbeat*) con temporizador de vigilancia entre **`PLC-Liceth` (`192.168.0.1`)** y **`PLC-Serrato` (`192.168.0.10`)**.
+   - Vincular las fallas de enlace al visor de alarmas de la HMI (accesible desde la barra inferior en [`HMI-Root.jpeg`](./images/HMI-Root.jpeg)) y establecer un manejo de estado seguro (*failsafe*), evitando que la pantalla muestre lecturas congeladas en **`DBComunicacion [DB10]`** ante una desconexión física del enlace Ethernet/PROFINET.
+
+---
+
 ## Cómo Abrir y Verificar el Proyecto
 
 1. Clonar este repositorio o descargar el directorio completo conservando toda la estructura de subcarpetas (`System/`, `IM/`, `AdditionalFiles/`, `Vci/`, `XRef/`, etc.).
